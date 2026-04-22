@@ -4,11 +4,11 @@
 #include <string>
 
 namespace NetworkUtils {
-    // 💡 인터페이스 이름(예: wlan0, eth0)을 넣으면 해당 MAC 주소와 IP를 반환합니다.
+    // wlan0 or eth0 삽입 / 와이파이 or 이더넷
     std::string getMacAddress(const std::string& interface_name);
     std::string getIpAddress(const std::string& interface_name);
     
-    // 사용 가능한(연결된) 첫 번째 인터페이스(wlan0 또는 eth0)의 이름을 찾습니다.
+    // 연결된 인터페이스 검색
     std::string getActiveInterfaceName();
 }
 

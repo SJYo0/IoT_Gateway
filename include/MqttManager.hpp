@@ -2,9 +2,10 @@
 #define MQTT_MANAGER_HPP
 
 #include <string>
-#include <atomic> // 스레드 간 안전한 상태 공유를 위해 사용
+#include <atomic> // 스레드간 원자성 보장
 #include <mqtt/async_client.h>
 
+// subscribe 에 비동기적 대응하기 위한 mqtt::callback 클래스
 class MqttManager : public virtual mqtt::callback {
 private:
     std::string server_address;
@@ -12,14 +13,14 @@ private:
     std::string mac_id;
     mqtt::async_client client;
 
-    // 💡 mqtt::callback 필수 오버라이딩 함수들 (이벤트가 발생하면 자동 실행됨)
+    // mqtt::callback 필수 오버라이드
     void connection_lost(const std::string& cause) override;
     void message_arrived(mqtt::const_message_ptr msg) override;
     void delivery_complete(mqtt::delivery_token_ptr token) override;
     
 public:
 
-    // 메인 스레드가 "승인됐어?" 하고 확인할 깃발
+    // 메인의 while문이 사용할 플래그 (승인 or 미승인)
     std::atomic<bool> is_approved{false};
     
     // 생성자

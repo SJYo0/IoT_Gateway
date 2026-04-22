@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     
     if(argc != 3) {
         std::cout << "[System] 사용법 : " << argv[0] << " 백엔드IP 백엔드Port" << '\n';
-        std::cout << "[System] 예시   : ./gateway_app 192.168.0.10 1883\n";
+        std::cout << "[System] 예시   : ./gateway_app 192.168.0.0 1883\n";
         return 1;
     }
     
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
     // 핸드쉐이크
     if (!mqttManager.connect()) {
-        std::cerr << "[System] 게이트웨이 초기화 실패. 프로그램을 종료합니다." << std::endl;
+        std::cerr << "[System] 게이트웨이 백엔드 연결 실패. 프로그램을 종료합니다." << std::endl;
         return 1;
     }
 
