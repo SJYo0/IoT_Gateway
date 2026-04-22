@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/gateway_app.dir/link.d CMakeFiles/gateway_app.dir/src/MqttManager.cpp.o CMakeFiles/gateway_app.dir/src/NetworkUtils.cpp.o CMakeFiles/gateway_app.dir/src/main.cpp.o -o gateway_app  -lpaho-mqttpp3 -lpaho-mqtt3as -lpthread
