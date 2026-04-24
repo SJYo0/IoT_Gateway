@@ -4,6 +4,9 @@
 #include <chrono>
 #include "MqttManager.hpp"
 #include "NetworkUtils.hpp"
+#include "SensorReader.hpp"
+#include "ThreadSafeQueue.hpp"
+#include "SensorDTO.hpp"
 
 // 시그널 핸들러에서 사용
 MqttManager* global_mqtt_ptr = nullptr;
