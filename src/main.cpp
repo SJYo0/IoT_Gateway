@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    // 1. 종료 시그널 등록
+    // 종료 시그널 등록
     signal(SIGINT, signalHandler);  // Ctrl+C
     signal(SIGTERM, signalHandler); // 프로세스 kill
 
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     std::cout << "[System] 센서 데이터 수집 스레드 가동" << std::endl;
     std::cout << "=============================================\n" << std::endl;
     
-    // 4. 스레드 안전 큐 및 센서 스레드 가동 (TODO 영역 완성)
+    // 뮤텍스 큐 및 센서 스레드 동작 시작
     ThreadSafeQueue<SensorDTO> dataQueue;
     SensorReader sensorManager(dataQueue);
     global_sensorReader_ptr = &sensorManager;
@@ -96,10 +96,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // 5. 메인 루프 (소비자 역할: 큐에서 데이터 꺼내서 MQTT 전송)
+    // main 스레드 MQTT 통신 로직
     std::cout << "[System] 센서 데이터 수집 시작" << std::endl;
     while (1) {
-        // 큐에서 수집된 센서 데이터 빼오기
+        // 큐에서 수집된 센서 데이터 POP
         SensorDTO data = dataQueue.pop();
 
         std::cout << "[BME280] temp:" << data.temperature << "C, hum:" << data.humidity << "%, pres:" << data.pressure << "hPa" << std::endl;
