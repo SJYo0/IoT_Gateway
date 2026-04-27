@@ -48,7 +48,7 @@ bool MqttManager::connect() {
 void MqttManager::publish(const std::string& topic, const std::string& payload) {
     try {
         mqtt::message_ptr pubmsg = mqtt::make_message(topic, payload);
-        pubmsg->set_qos(1);
+        pubmsg->set_qos(1); // 적어도 1번 전송보장
         client.publish(pubmsg)->wait();
     } catch (const mqtt::exception& exc) {
         std::cerr << "[MQTT 발행 오류] " << exc.what() << std::endl;
@@ -63,7 +63,7 @@ void MqttManager::disconnect() {
         publish("devices/status", offlinePayload);
 
         // MediaMTX 서버 종료
-        std::cout << "[시스템] 카메라 스트리밍 서버(MediaMTX)를 종료합니다." << std::endl;
+        std::cout << "[MQTT] 카메라 스트리밍 서버(MediaMTX)를 종료합니다." << std::endl;
         system("sudo systemctl stop mediamtx");
         // system("sudo killall mediamtx");
 
@@ -71,7 +71,7 @@ void MqttManager::disconnect() {
         client.disconnect()->wait();
         std::cout << "[MQTT] 게이트웨이 서버 종료." << std::endl;
     } catch (const mqtt::exception& exc) {
-        std::cerr << "[MQTT 종료 오류] " << exc.what() << std::endl;
+        std::cerr << "[MQTT] 오류발생: " << exc.what() << std::endl;
     }
 }
 
@@ -87,19 +87,19 @@ void MqttManager::message_arrived(mqtt::const_message_ptr msg) {
     if (topic == my_response_topic) {
         // 연결 승인 시
         if (payload.find("APPROVED") != std::string::npos) {
-            std::cout << "\n[System] 기기 연결요청 승인 확인" << std::endl;
+            std::cout << "\n[MQTT] 기기 연결요청 승인 확인" << std::endl;
             is_approved = true; // 센서 스레드 동작 시작
 
             // MediaMTX 서버 가동
-            std::cout << "[System] MediaMTX 서버 구동" << std::endl;
+            std::cout << "[MQTT] MediaMTX 서버 구동" << std::endl;
             system("sudo systemctl start mediamtx"); 
             
             // system("/mediamtx/mediamtx &");
         }
         // 연결 거절 시
         else if (payload.find("REJECTED") != std::string::npos) {
-            std::cout << "\n[System] 기기 연결요청 거절 확인" << std::endl;
-            std::cout << "\n[System] 게이트웨이 서버를 종료 후, 다시 시도해주세요." << std::endl;
+            std::cout << "\n[MQTT] 기기 연결요청 거절 확인" << std::endl;
+            std::cout << "\n[MQTT] 게이트웨이 서버를 종료 후, 다시 시도해주세요." << std::endl;
             std::cout << "\n(Ctrl+C를 눌러 종료)" << std::endl;
             is_approved = false;
         }

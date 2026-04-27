@@ -13,12 +13,12 @@ private:
     uint8_t bits_per_word;
 
 public:
-    // 라즈베리파이의 기본 SPI0 버스의 첫 번째 기기(CE0)를 기본값으로 사용
+    // CE0 핀을 spi 스위치로 사용, 클럭 1MHz
     MCP3008(const std::string& path = "/dev/spidev0.0", uint32_t speed_hz = 1000000);
     ~MCP3008();
 
     bool init();
-    int readADC(int channel); // 0번 ~ 7번 채널 중 선택하여 읽기
+    int readADC(int channel); // 채널 선택 (0)
 };
 
 #endif

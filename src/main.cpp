@@ -10,6 +10,7 @@
 
 // 시그널 핸들러에서 사용
 MqttManager* global_mqtt_ptr = nullptr;
+SensorReader* global_sensorReader_ptr = nullptr;
 
 // OS가 종료 신호(Ctrl+C 등)를 보낼 때 가로채는 함수
 void signalHandler(int signum) {
@@ -17,7 +18,27 @@ void signalHandler(int signum) {
     if (global_mqtt_ptr != nullptr) {
         global_mqtt_ptr->disconnect();
     }
+    if (global_sensorReader_ptr != nullptr) {
+        global_sensorReader_ptr->stop();
+    }
     exit(signum);
+}
+
+std::string serializeToJson(const SensorDTO& data) {
+    char buffer[256]; 
+    
+    snprintf(buffer, sizeof(buffer),
+             "{\"temperature\":%.1f,"
+             "\"humidity\":%.1f,"
+             "\"pressure\":%.1f,"
+             "\"tvoc\":%u,"
+             "\"eco2\":%u,"
+             "\"flameValue\":%d,"
+             "\"timestamp\":%lld}",
+             data.temperature, data.humidity, data.pressure, 
+             data.tvoc, data.eco2, data.flameValue, data.timestamp);
+             
+    return std::string(buffer);
 }
 
 int main(int argc, char* argv[]) {
@@ -64,12 +85,30 @@ int main(int argc, char* argv[]) {
     std::cout << "[System] 센서 데이터 수집 스레드 가동" << std::endl;
     std::cout << "=============================================\n" << std::endl;
     
-    // TODO: 센서 스레드 코드
+    // 4. 스레드 안전 큐 및 센서 스레드 가동 (TODO 영역 완성)
+    ThreadSafeQueue<SensorDTO> dataQueue;
+    SensorReader sensorManager(dataQueue);
+    global_sensorReader_ptr = &sensorManager;
 
-    // 4. 메인 루프 (현재는 통신 연결만 유지하며 대기)
-    std::cout << "[System] 게이트웨이 정상 가동 중... (Ctrl+C를 눌러 종료)" << std::endl;
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    if (!sensorManager.start()) {
+        std::cerr << "[System] 하드웨어 초기화 실패. 프로그램을 종료합니다." << std::endl;
+        mqttManager.disconnect();
+        return 1;
+    }
+
+    // 5. 메인 루프 (소비자 역할: 큐에서 데이터 꺼내서 MQTT 전송)
+    std::cout << "[System] 센서 데이터 수집 시작" << std::endl;
+    while (1) {
+        // 큐에서 수집된 센서 데이터 빼오기
+        SensorDTO data = dataQueue.pop();
+
+        std::cout << "[BME280] temp:" << data.temperature << "C, hum:" << data.humidity << "%, pres:" << data.pressure << "hPa" << std::endl;
+        std::cout << "[ENS160] TVOC:" << data.tvoc << "ppb, ECO2:" << data.eco2 << "ppm" << std::endl;
+        std::cout << "[KY-026] Flame:" << data.flameValue << std::endl << std::endl;
+
+        // 센서 데이터 json 직렬화 및 발행
+        std::string json = serializeToJson(data);
+        mqttManager.publish("gateway/" + my_mac + "/telemetry", json);
     }
 
     return 0;
