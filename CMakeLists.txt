@@ -11,6 +11,7 @@ include_directories(
     include/network
     include/sensor
     include/thread
+    include/LED
 )
 
 # src .cpp 파일을 소스로 지정
@@ -24,4 +25,5 @@ target_link_libraries(gateway_app
     paho-mqttpp3
     paho-mqtt3as
     pthread
+    gpiod
 )

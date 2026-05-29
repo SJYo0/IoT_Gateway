@@ -4,6 +4,7 @@
 #include <string>
 #include <atomic> // 스레드간 원자성 보장
 #include <mqtt/async_client.h>
+#include "../LED/LEDController.hpp"
 
 // subscribe 에 비동기적 대응하기 위한 mqtt::callback 클래스
 class MqttManager : public virtual mqtt::callback {
@@ -12,6 +13,7 @@ private:
     std::string client_id;
     std::string mac_id;
     mqtt::async_client client;
+    LEDController ledController;
 
     // mqtt::callback 필수 오버라이드
     void connection_lost(const std::string& cause) override;

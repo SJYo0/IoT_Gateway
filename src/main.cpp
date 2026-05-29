@@ -102,9 +102,9 @@ int main(int argc, char* argv[]) {
         // 큐에서 수집된 센서 데이터 POP
         SensorDTO data = dataQueue.pop();
 
-        std::cout << "[BME280] temp:" << data.temperature << "C, hum:" << data.humidity << "%, pres:" << data.pressure << "hPa" << std::endl;
-        std::cout << "[ENS160] TVOC:" << data.tvoc << "ppb, ECO2:" << data.eco2 << "ppm" << std::endl;
-        std::cout << "[KY-026] Flame:" << data.flameValue << std::endl << std::endl;
+        // std::cout << "[BME280] temp:" << data.temperature << "C, hum:" << data.humidity << "%, pres:" << data.pressure << "hPa" << std::endl;
+        // std::cout << "[ENS160] TVOC:" << data.tvoc << "ppb, ECO2:" << data.eco2 << "ppm" << std::endl;
+        // std::cout << "[KY-026] Flame:" << data.flameValue << std::endl << std::endl;
 
         // 센서 데이터 json 직렬화 및 발행
         std::string json = serializeToJson(data);
