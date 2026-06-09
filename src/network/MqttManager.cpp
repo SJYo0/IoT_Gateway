@@ -2,6 +2,7 @@
 #include "NetworkUtils.hpp"
 #include <cstdlib> // system() 함수
 #include <iostream>
+#include <algorithm>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -106,9 +107,31 @@ void MqttManager::message_arrived(mqtt::const_message_ptr msg) {
             ledController.turnOffAll();
 
             // MediaMTX 서버에 영상 송출
-            std::cout << "[MQTT] MediaMTX 서버 영상 송출 시작" << std::endl;
-            system("bash -c 'while true; do rpicam-vid -t 0 --inline --width 640 --height 480 --framerate 15 --intra 15 --codec h264 --profile baseline --libav-format h264 -o - | ffmpeg -f h264 -i - -c:v copy -rtsp_transport tcp -f rtsp rtsp://210.104.76.141:8554/cam; echo \"[System] 송출 재시작...\"; sleep 2; done' &");
-            
+            std::string streamPath = mac_id;
+            streamPath.erase(
+                std::remove(streamPath.begin(), streamPath.end(), ':'),
+                streamPath.end()
+            );
+
+            std::cout << "[MQTT] MediaMTX 서버 영상 송출 시작 : " << streamPath <<std::endl;
+
+            std::string cmd =
+                "bash -c 'while true; do "
+                "rpicam-vid -t 0 --inline "
+                "--width 640 --height 480 "
+                "--framerate 15 --intra 15 "
+                "--codec h264 --profile baseline "
+                "--libav-format h264 -o - | "
+                "ffmpeg -f h264 -i - "
+                "-c:v copy "
+                "-rtsp_transport tcp "
+                "-f rtsp "
+                "rtsp://210.104.76.141:8554/" + streamPath +
+                "; echo \"[System] 송출 재시작...\"; "
+                "sleep 2; "
+                "done' &";
+
+            system(cmd.c_str());
             // system("/mediamtx/mediamtx &");
         }
         // 연결 거절 시
